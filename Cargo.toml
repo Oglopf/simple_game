@@ -1,0 +1,15 @@
+[package]
+name = "flappy"
+version = "0.1.0"
+edition = "2021"
+# Needed to set some env vars and install some packages for C builds in order for this to work.authors.authors.
+# sudo apt install cmake
+# sudo apt install pkg-config
+# sudo apt install libfontconfig-dev
+# vim ~/.bashrc 
+# export PCK_CONFIG_PATH='/usr/lib/x86_64-linux-gnu/pkgconfig'
+# source the new bashrc and issue cargo build and things worked.    
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bracket-lib = "~0.8.1"
