@@ -109,6 +109,23 @@ impl State {
     }
 }
 
+// bracket-lit defines a Trait named GameState
+// for games state structures. Requires object implement tick().
+// Implement a trait similar to implementing a method
+// on a struct. You implement the trait for the struct
+// and define functions which the Trait expects, here tick().
+impl GameState for State {
+    // Takes a mutable instance of self and a mutable context of type BTerm.
+    fn tick(&mut self, ctx: &mut BTerm) {
+        match self.mode {
+            GameMode::Menu => self.main_menu(ctx),
+            GameMode::End => self.dead(ctx),
+            GameMode::Playing => self.play(ctx),
+        }
+    }
+}
+
+
 // Capture players positions.
 struct Player {
     x: i32,
@@ -250,26 +267,10 @@ const SCREEN_WIDTH : i32 = 80;
 const SCREEN_HEIGHT : i32 = 50;
 const FRAME_DURATION : f32 = 75.0;
 
-// bracket-lit defines a Trait named GameState
-// for games state structures. Requires object implement tick().
-// Implement a trait similar to implementing a method
-// on a struct. You implement the trait for the struct
-// and define functions which the Trait expects, here tick().
-impl GameState for State {
-    // Takes a mutable instance of self and a mutable context of type BTerm.
-    fn tick(&mut self, ctx: &mut BTerm) {
-        match self.mode {
-            GameMode::Menu => self.main_menu(ctx),
-            GameMode::End => self.dead(ctx),
-            GameMode::Playing => self.play(ctx),
-        }
-    }
-}
-
 // BError type comes from bracket_lib and if the main_loop fails
 // it can pass that up and still have the main loop run correctly.
 fn main() -> BError {
-    println!("Hello, world!");
+    println!("Flappy Dragon running!");
 
     let context = BTermBuilder::simple80x50()
         .with_title("Flappy Dragon")
