@@ -28,10 +28,13 @@ impl State {
         // TODO: Fill in this stub later.
         // NAVY comes from bracket_lib.
         ctx.cls_bg(NAVY);
+        // Output game instructin and score onto screen.
+        ctx.print(0, 0, "Press SPACE to flap.");
+        ctx.print(0, 1, &format!("Score: {}", self.score));
 
-        // The context provides a variable named frame_time_ms containing 
-        // the time elapsed since the last time tick() was called. 
-        // Add this to your state’s frame_time. If it exceeds the FRAME_DURATION 
+        // The context provides frame_time_ms containing 
+        // time elapsed since last tick() call. 
+        // Add this to state’s frame_time. If frame_time_ms > FRAME_DURATION 
         // constant, then it’s time to run the physics simulation and reset 
         // your frame_time to zero.
         self.frame_time += ctx.frame_time_ms;
@@ -45,6 +48,19 @@ impl State {
         self.player.render(ctx);
         ctx.print(0, 0, "Press SPACE to flap.");
         if self.player.y > SCREEN_HEIGHT {
+            self.mode = GameMode::End;
+        }
+
+        // Render the obstacles on screen.
+        self.obstacle.render(ctx, self.player.x);
+        if self.player.x > self.obstacle.x {
+            self.score += 1;
+            self.obstacle = Obstacle::new(
+                self.player.x + SCREEN_WIDTH,
+                self.score,
+            );
+        }
+        if self.player.y > SCREEN_HEIGHT || self.obstacle.hit_obstacle(&self.player) {
             self.mode = GameMode::End;
         }
     }
