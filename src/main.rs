@@ -5,7 +5,9 @@ use bracket_lib::prelude::*;
 struct State {
     player: Player,
     frame_time: f32,
+    obstacle: Obstacle,
     mode: GameMode,
+    score: i32,
 }
 
 // Constructor to initialize the State's GameMode.
@@ -16,6 +18,8 @@ impl State {
             player: Player::new(5, 25),
             frame_time: 0.0,
             mode: GameMode::Menu,
+            obstacle: Obstacle::new(SCREEN_WIDTH, 0),
+            score: 0,
         }
     }
 
@@ -122,6 +126,96 @@ impl Player {
     fn flap(&mut self) {
         // 0 is top of screen, so -2.0 moves you UP on screen.
         self.velocity += -2.0;
+    }
+}
+
+// Render the walls using the '|' character.
+struct Obstacle {
+    x: i32,
+    gap_y: i32,
+    size: i32,
+}
+
+impl Obstacle {
+    // Score is determined by how many Obstacles are avoided.
+    fn new(x: i32, score: i32) -> Self {
+        // Generate randomly placed gaps on the screen for
+        // the obstacles.
+        let mut random = RandomNumberGenerator::new();
+
+        Obstacle {
+            x,
+            gap_y: random.range(10, 40),
+            size: i32::max(2, 20 - score)
+        }
+    }
+
+    /*
+    screen_x location from the obstacle requires 
+    converstion from world-spce to screen-space.
+    Player is always at 0 in screen-space, but has 
+    a game world position defined in player.x.
+    The obstacle's x value is also in this world-space.
+    Convert to screen-space by subtracting player.x's location 
+    from obstacle.x's location.
+                                                0
+                            |              |
+                            |   obstacle   |
+                            ----------------
+                                    +
+        gap_y - (size / 2)  ------->|           Y
+                                    +           
+                    gap_y   ------->- point     A
+                                    +           x
+        gap_y + (size / 2)  ------->|           i
+                                    +           s
+                            ----------------
+                            |   obstacle   |
+                            |              |
+
+                                                50
+    */
+
+    // Render the obstacle diagrammed above.
+    // Each obstacle has a bottom half and top half with a gap.
+    fn render(&mut self, ctx: &mut BTerm, player_x : i32) {
+        // Convert to screen space.
+        let screen_x = self.x - player_x;
+        let half_size = self.size / 2;
+
+        // Use 2 for loops to create the top and bottom obstacle.
+        // Draw the top half of the obstacle.
+        for y in 0..self.gap_y - half_size {
+            ctx.set(
+                screen_x,
+                y,
+                RED,
+                BLACK,
+                to_cp437('|')
+            );
+        }
+
+        // Draw the bottom half of the obstacle.
+        for y in self.gap_y + half_size..SCREEN_HEIGHT {
+            ctx.set(
+                screen_x,
+                y,
+                RED,
+                BLACK,
+                to_cp437('|'),
+            );
+        }
+    }
+
+    // Taking a borrowed reference to the player to determing
+    // the player's position. 
+    fn hit_obstacle(&self, player: &Player) -> bool {
+        let half_size = self.size / 2;
+        let does_x_match = player.x == self.x;
+        let player_above_gap = player.y < self.gap_y - half_size;
+        let plaery_below_gap = player.y > self.gap_y + half_size;
+        
+        does_x_match && (plaery_below_gap || player_above_gap)
     }
 }
 
